@@ -1,0 +1,36 @@
+# Виртуальное окружение
+.venv/
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Django
+db.sqlite3
+*.log
+local_settings.py
+/media/
+/static/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+*.orig
+
+# Переменные окружения
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db

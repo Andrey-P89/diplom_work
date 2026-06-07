@@ -17,3 +17,68 @@ Content-Type: application/json
     "email": "test@mail.ru",
     "password": "123456"
 }
+
+### Cart
+POST http://127.0.0.1:8000/api/cart/add/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Content-Type: application/json
+
+{
+    "product_info_id": 1,
+    "quantity": 2
+}
+
+### ViewCart
+
+GET http://127.0.0.1:8000/api/cart/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+
+### DeleteItemCart
+
+DELETE http://127.0.0.1:8000/api/cart/remove/2/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+
+### Создать контакт (адрес)
+
+POST http://127.0.0.1:8000/api/contacts/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Content-Type: application/json
+
+{
+    "type": "address",
+    "value": "г. Москва, ул. Тверская, д. 1"
+}
+
+### Получить список контактов
+GET http://127.0.0.1:8000/api/contacts/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+
+### Удалить контакт
+DELETE http://127.0.0.1:8000/api/contacts/2/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+
+### Подтверждение заказа
+POST http://127.0.0.1:8000/api/orders/confirm/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Content-Type: application/json
+
+{
+    "contact_id": 3
+}
+
+### Список заказов
+GET http://127.0.0.1:8000/api/orders/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+
+### Детали заказа
+GET http://127.0.0.1:8000/api/orders/1/
+Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+
+###
+PATCH http://127.0.0.1:8000/api/orders/1/status/
+Authorization: Token ce409d485584ec741194c3a3cd6fb4f2afb4fa92
+Content-Type: application/json
+
+{
+    "status": "processing"
+}

@@ -1,15 +1,17 @@
-from rest_framework import generics
+from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
-
-from .models import Product
-from .serializers import ProductSerializer
+from .models import ProductInfo
+from .serializers import ProductInfoListSerializer
 
 class ProductListView(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    queryset = ProductInfo.objects.select_related('product', 'shop').prefetch_related('parameters__parameter')
+    serializer_class = ProductInfoListSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['shop__name', 'product__category__name']
+    search_fields = ['product__name', 'product__description']
 
-    filter_backends = [DjangoFilterBackend]
 
-    filterset_fields = ['supplier']
-
-    search_fields = ['name', 'description']
+class ProductDetailView(generics.RetrieveAPIView):
+    queryset = ProductInfo.objects.select_related('product', 'shop').prefetch_related('parameters__parameter')
+    serializer_class = ProductInfoListSerializer
+    lookup_field = 'pk'

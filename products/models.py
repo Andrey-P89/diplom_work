@@ -28,6 +28,7 @@ class Category(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    description = models.TextField(blank=True, verbose_name='Описание')
 
     def __str__(self):
         return self.name

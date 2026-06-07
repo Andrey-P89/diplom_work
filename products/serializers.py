@@ -1,7 +1,18 @@
 from rest_framework import serializers
-from .models import Product
+from .models import ProductInfo, ProductParameter
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductParameterSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='parameter.name')
     class Meta:
-        model = Product
-        fields = ['id', 'name', 'description', 'supplier', 'price', 'quantity']
+        model = ProductParameter
+        fields = ['name', 'value']
+
+class ProductInfoListSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='product.name')
+    description = serializers.CharField(source='product.description')
+    supplier = serializers.CharField(source='shop.name')
+    parameters = ProductParameterSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = ProductInfo
+        fields = ['id', 'name', 'description', 'supplier', 'price', 'quantity', 'parameters']

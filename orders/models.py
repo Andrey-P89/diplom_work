@@ -22,6 +22,15 @@ class Order(models.Model):
     
     def __str__(self):
         return f"Заказ №{self.id} - {self.user.email} ({self.status})"
+    
+    @property
+    def total_amount(self):
+        total = 0
+        for item in self.items.all():
+            product_info = item.product.product_infos.filter(shop=item.shop).first()
+            if product_info:
+                total += product_info.price * item.quantity
+        return total
 
 
 class OrderItem(models.Model):
@@ -33,6 +42,24 @@ class OrderItem(models.Model):
     
     def __str__(self):
         return f"{self.product.name} x{self.quantity} - {self.shop.name}"
+    
+
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Корзина {self.user.email}"
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    product_info = models.ForeignKey('products.ProductInfo', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.product_info.product.name} x{self.quantity}"
 
 
 class Contact(models.Model):

@@ -32,8 +32,7 @@ class CartSerializer(serializers.ModelSerializer):
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ['id', 'type', 'user', 'value']
-        read_only_fields = ['user']
+        fields = ['id', 'city', 'street', 'house', 'structure', 'building', 'apartment', 'phone']
 
 
 class OrderConfirmSerializer(serializers.Serializer):
@@ -41,18 +40,17 @@ class OrderConfirmSerializer(serializers.Serializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source='product.name')
-    shop_name = serializers.CharField(source='shop.name')
+    product_name = serializers.CharField(source='product_info.product.name')
+    shop_name = serializers.CharField(source='product_info.shop.name')
+    price = serializers.DecimalField(source='product_info.price', max_digits=12, decimal_places=2)
     total = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product_name', 'shop_name', 'quantity', 'total']
+        fields = ['id', 'product_name', 'shop_name', 'price', 'quantity', 'total']
 
     def get_total(self, obj):
-        product_info = obj.product.product_infos.filter(shop=obj.shop).first()
-        price = product_info.price if product_info else 0
-        return price * obj.quantity
+        return obj.product_info.price * obj.quantity
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -61,7 +59,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'dt', 'status', 'total_amount', 'items']
+        fields = ['id', 'dt', 'status', 'total_amount', 'items', 'contact']
 
 
 class OrderStatusUpdateSerializer(serializers.ModelSerializer):

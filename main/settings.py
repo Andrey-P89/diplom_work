@@ -143,4 +143,4 @@ REST_FRAMEWORK = {
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
 
-ADMIN_EMAIL = 'aapopov@fas.gov.ru' # admin@example.com
+ADMIN_EMAIL = 'admin@example.com'

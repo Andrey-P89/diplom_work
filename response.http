@@ -1,84 +1,83 @@
+### Registration user
 POST http://127.0.0.1:8000/api/register/
 Content-Type: application/json
 
 {
-    "email": "test@mail.ru",
+    "email": "testuser@example.com",
     "username": "testuser",
-    "password": "123456",
-    "password_confirm": "123456",
+    "password": "testpass123",
+    "password_confirm": "testpass123",
     "type": "buyer"
 }
 
-### Login
+### Autorization user
 POST http://127.0.0.1:8000/api/login/
 Content-Type: application/json
 
 {
-    "email": "test@mail.ru",
-    "password": "123456"
+    "email": "testuser@example.com",
+    "password": "testpass123"
 }
 
-### Cart
+### Product list
+GET http://127.0.0.1:8000/api/products/
+Authorization: Token YOUR_TOKEN_HERE
+
+### Products (filter shop)
+GET http://127.0.0.1:8000/api/products/?shop__name=Связной
+Authorization: Token YOUR_TOKEN_HERE
+
+### Products (search name)
+GET http://127.0.0.1:8000/api/products/?search=iPhone
+Authorization: Token YOUR_TOKEN_HERE
+
+### Add product in cart
 POST http://127.0.0.1:8000/api/cart/add/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Authorization: Token YOUR_TOKEN_HERE
 Content-Type: application/json
 
 {
     "product_info_id": 1,
-    "quantity": 2
+    "quantity": 1
 }
 
-### ViewCart
-
-GET http://127.0.0.1:8000/api/cart/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
-
-### DeleteItemCart
-
+### Remove item from cart
 DELETE http://127.0.0.1:8000/api/cart/remove/2/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Authorization: Token YOUR_TOKEN_HERE
 
-### Создать контакт (адрес)
+### View cart
+GET http://127.0.0.1:8000/api/cart/
+Authorization: Token YOUR_TOKEN_HERE
 
+### Create contact
 POST http://127.0.0.1:8000/api/contacts/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Authorization: Token YOUR_TOKEN_HERE
 Content-Type: application/json
 
 {
-    "type": "address",
-    "value": "г. Москва, ул. Тверская, д. 1"
+    "city": "Москва",
+    "street": "Тверская",
+    "house": "1",
+    "phone": "+7 999 123-45-67"
 }
 
-### Получить список контактов
-GET http://127.0.0.1:8000/api/contacts/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+### Delete contact
+DELETE http://127.0.0.1:8000/api/contacts/1/
+Authorization: Token YOUR_TOKEN_HERE
 
-### Удалить контакт
-DELETE http://127.0.0.1:8000/api/contacts/2/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
-
-### Подтверждение заказа
+### Confirm order
 POST http://127.0.0.1:8000/api/orders/confirm/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Authorization: Token YOUR_TOKEN_HERE
 Content-Type: application/json
 
 {
-    "contact_id": 3
+    "contact_id": 1
 }
 
-### Список заказов
+### Get orders
 GET http://127.0.0.1:8000/api/orders/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
+Authorization: Token YOUR_TOKEN_HERE
 
-### Детали заказа
+### Get order details
 GET http://127.0.0.1:8000/api/orders/1/
-Authorization: Token 37c01ec1e9e155a67edecc33dcc21c7a5fdac8c1
-
-###
-PATCH http://127.0.0.1:8000/api/orders/1/status/
-Authorization: Token ce409d485584ec741194c3a3cd6fb4f2afb4fa92
-Content-Type: application/json
-
-{
-    "status": "processing"
-}
+Authorization: Token YOUR_TOKEN_HERE

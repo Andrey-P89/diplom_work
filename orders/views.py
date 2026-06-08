@@ -91,13 +91,12 @@ class ConfirmOrderView(generics.GenericAPIView):
         if not cart.items.exists():
             return Response({'error': 'Корзина пуста'}, status=status.HTTP_400_BAD_REQUEST)
 
-        order = Order.objects.create(user=request.user, status='new')
+        order = Order.objects.create(user=request.user, status='new', contact=contact)
 
         for cart_item in cart.items.all():
             OrderItem.objects.create(
                 order=order,
-                product=cart_item.product_info.product,
-                shop=cart_item.product_info.shop,
+                product_info=cart_item.product_info,
                 quantity=cart_item.quantity
             )
 
@@ -127,14 +126,14 @@ class OrderListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).prefetch_related('items__product', 'items__shop')
+        return Order.objects.filter(user=self.request.user).prefetch_related('items__product_info__product', 'items__product_info__shop')
 
 class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).prefetch_related('items__product', 'items__shop')
+        return Order.objects.filter(user=self.request.user).prefetch_related('items__product_info__product', 'items__product_info__shop')
     
 
 class OrderStatusUpdateView(generics.UpdateAPIView):
@@ -143,12 +142,18 @@ class OrderStatusUpdateView(generics.UpdateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        # Если пользователь — магазин (поставщик), то он может менять статус только тех заказов,
-        # в которых есть товары его магазина.
         if hasattr(user, 'shop') and user.shop:
             return Order.objects.filter(items__shop=user.shop).distinct()
-        # Если администратор (is_staff), то может менять все заказы
         if user.is_staff:
             return Order.objects.all()
-        # Обычный покупатель не может менять статус
         return Order.objects.none()
+    
+    def perform_update(self, serializer):
+        order = serializer.save()
+        send_mail(
+            subject=f'Статус заказа №{order.id} изменён',
+            message=f'Ваш заказ №{order.id} теперь имеет статус: {order.get_status_display()}.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[order.user.email],
+            fail_silently=True,
+        )

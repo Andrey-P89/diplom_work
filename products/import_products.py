@@ -31,7 +31,6 @@ def import_products(user_id, file_path):
             shop=shop,
             external_id=item['id'],
             defaults={
-                'name': item['name'],
                 'price': item['price'],
                 'price_rrc': item.get('price_rrc', None),
                 'quantity': item['quantity'],

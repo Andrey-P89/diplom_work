@@ -1,3 +1,4 @@
-django
+Django
+django-filter
 djangorestframework
-pyyaml
+PyYAML

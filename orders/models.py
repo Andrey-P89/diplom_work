@@ -6,6 +6,27 @@ from products.models import Product, Shop
 User = get_user_model()
 
 
+class Contact(models.Model):
+    user = models.ForeignKey(User, verbose_name='Пользователь',
+                             related_name='contacts', blank=True,
+                             on_delete=models.CASCADE)
+
+    city = models.CharField(max_length=50, verbose_name='Город')
+    street = models.CharField(max_length=100, verbose_name='Улица')
+    house = models.CharField(max_length=15, verbose_name='Дом', blank=True)
+    structure = models.CharField(max_length=15, verbose_name='Корпус', blank=True)
+    building = models.CharField(max_length=15, verbose_name='Строение', blank=True)
+    apartment = models.CharField(max_length=15, verbose_name='Квартира', blank=True)
+    phone = models.CharField(max_length=20, verbose_name='Телефон')
+
+    class Meta:
+        verbose_name = 'Контакты пользователя'
+        verbose_name_plural = "Список контактов пользователя"
+
+    def __str__(self):
+        return f'{self.city} {self.street} {self.house}'
+    
+    
 class Order(models.Model):
     """Заказ"""
     STATUS_CHOICES = (
@@ -19,29 +40,20 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     dt = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    contact = models.ForeignKey(Contact, verbose_name='Контакт', blank=True, null=True, on_delete=models.CASCADE)
     
     def __str__(self):
         return f"Заказ №{self.id} - {self.user.email} ({self.status})"
     
     @property
     def total_amount(self):
-        total = 0
-        for item in self.items.all():
-            product_info = item.product.product_infos.filter(shop=item.shop).first()
-            if product_info:
-                total += product_info.price * item.quantity
-        return total
+        return sum(item.product_info.price * item.quantity for item in self.items.all())
 
 
 class OrderItem(models.Model):
-    """Товар в заказе"""
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
+    product_info = models.ForeignKey('products.ProductInfo', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
-    
-    def __str__(self):
-        return f"{self.product.name} x{self.quantity} - {self.shop.name}"
     
 
 class Cart(models.Model):
@@ -62,15 +74,3 @@ class CartItem(models.Model):
         return f"{self.product_info.product.name} x{self.quantity}"
 
 
-class Contact(models.Model):
-    CONTACT_TYPES = (
-        ('phone', 'Телефон'),
-        ('address', 'Адрес'),
-    )
-    
-    type = models.CharField(max_length=10, choices=CONTACT_TYPES)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contacts')
-    value = models.TextField()
-    
-    def __str__(self):
-        return f"{self.user.email} - {self.type}: {self.value}"

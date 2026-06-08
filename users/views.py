@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from django.core.mail import send_mail
+from django.conf import settings
 from .serializers import RegisterSerializer, LoginSerializer
 
 
@@ -13,6 +15,15 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token, created = Token.objects.get_or_create(user=user)
+
+        send_mail(
+            subject='Регистрация на сайте',
+            message=f'Спасибо за регистрацию, {user.username}!',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+        
         return Response({
             'user': {
                 'email': user.email,

@@ -37,7 +37,6 @@ class Product(models.Model):
 class ProductInfo(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_infos')
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name='product_infos')
-    name = models.CharField(max_length=200, verbose_name='Название в магазине')
     quantity = models.PositiveIntegerField(default=0)
     price = models.DecimalField(max_digits=12, decimal_places=2)
     price_rrc = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)

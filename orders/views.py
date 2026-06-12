@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from .models import Cart, CartItem, Contact, Order, OrderItem
 from .serializers import CartSerializer, CartItemSerializer, ContactSerializer, OrderConfirmSerializer, OrderSerializer, OrderStatusUpdateSerializer
 from products.models import ProductInfo
-from django.core.mail import send_mail
+from main.tasks import send_email_task
 from django.conf import settings
 
 
@@ -102,20 +102,16 @@ class ConfirmOrderView(generics.GenericAPIView):
 
         cart.items.all().delete()
 
-        send_mail(
+        send_email_task.delay(
             subject='Заказ оформлен',
             message=f'Ваш заказ №{order.id} принят. Сумма: {order.total_amount}',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[request.user.email],
-            fail_silently=True,
+            recipient_list=[request.user.email]
         )
 
-        send_mail(
+        send_email_task.delay(
             subject='Новый заказ',
             message=f'Поступил заказ №{order.id} от {request.user.email} на сумму {order.total_amount} руб.',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['admin@example.com'],  # замени на реальный email администратора
-            fail_silently=True,
+            recipient_list=['admin@example.com']
         )
 
         return Response({'order_id': order.id, 'status': 'confirmed'})
@@ -150,10 +146,8 @@ class OrderStatusUpdateView(generics.UpdateAPIView):
     
     def perform_update(self, serializer):
         order = serializer.save()
-        send_mail(
+        send_email_task.delay(
             subject=f'Статус заказа №{order.id} изменён',
             message=f'Ваш заказ №{order.id} теперь имеет статус: {order.get_status_display()}.',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[order.user.email],
-            fail_silently=True,
+            recipient_list=[order.user.email]
         )

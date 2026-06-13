@@ -6,6 +6,19 @@ from .serializers import RegisterSerializer, LoginSerializer
 from main.tasks import send_email_task
 
 class RegisterView(generics.CreateAPIView):
+    """
+    Регистрация нового пользователя.
+
+    Ожидает POST-запрос с данными:
+    - email (обязательное, уникальное)
+    - username (обязательное)
+    - password (обязательное, минимум 6 символов)
+    - password_confirm (должно совпадать с password)
+    - type (необязательное, 'buyer' или 'shop', по умолчанию 'buyer')
+    - first_name, last_name, company, position (опционально)
+
+    В случае успеха возвращает JSON с данными пользователя и токеном авторизации.
+    """
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -32,6 +45,15 @@ class RegisterView(generics.CreateAPIView):
 
 
 class LoginView(generics.GenericAPIView):
+    """
+    Авторизация пользователя.
+
+    Принимает POST-запрос с полями:
+    - email
+    - password
+
+    Возвращает токен авторизации, id пользователя, email и тип (buyer/shop).
+    """
     serializer_class = LoginSerializer
     permission_classes = [permissions.AllowAny]
 

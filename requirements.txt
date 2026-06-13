@@ -4,3 +4,4 @@ djangorestframework
 PyYAML
 celery
 redis
+drf-spectacular

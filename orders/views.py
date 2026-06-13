@@ -8,7 +8,12 @@ from django.conf import settings
 
 
 class CartView(generics.RetrieveAPIView):
-    """Просмотр корзины"""
+    """
+    Просмотр корзины текущего пользователя.
+
+    GET-запрос возвращает все товары в корзине с их количеством и общей стоимостью.
+    Требуется авторизация (токен).
+    """
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -18,7 +23,16 @@ class CartView(generics.RetrieveAPIView):
 
 
 class AddToCartView(generics.CreateAPIView):
-    """Добавление товара в корзину"""
+    """
+    Добавление товара в корзину.
+
+    Ожидает POST-запрос с JSON:
+    - product_info_id (id записи ProductInfo, т.е. товара в конкретном магазине)
+    - quantity (количество, по умолчанию 1)
+
+    Если товар уже в корзине, увеличивает количество. Возвращает статус и item_id.
+    Требуется авторизация.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -44,7 +58,12 @@ class AddToCartView(generics.CreateAPIView):
 
 
 class RemoveFromCartView(generics.DestroyAPIView):
-    """Удаление товара из корзины"""
+    """
+    Удаление конкретного товара из корзины.
+
+    DELETE-запрос с указанием item_id в URL.
+    Требуется авторизация.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, item_id):
@@ -57,6 +76,14 @@ class RemoveFromCartView(generics.DestroyAPIView):
         
 
 class ContactListCreateView(generics.ListCreateAPIView):
+    """
+    Работа с контактами (адресами доставки) пользователя.
+
+    GET - возвращает список контактов текущего пользователя.
+    POST - создаёт новый контакт. Ожидает JSON с полями:
+    city, street, house, phone (остальные поля необязательны).
+    Требуется авторизация.
+    """
     serializer_class = ContactSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -67,6 +94,12 @@ class ContactListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 class ContactDestroyView(generics.DestroyAPIView):
+    """
+    Удаление контакта по id.
+
+    DELETE-запрос с указанием pk в URL.
+    Требуется авторизация.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -74,6 +107,14 @@ class ContactDestroyView(generics.DestroyAPIView):
     
 
 class ConfirmOrderView(generics.GenericAPIView):
+    """
+    Подтверждение заказа.
+
+    POST-запрос с JSON: {"contact_id": id_контакта}.
+    Переносит товары из корзины в заказ, очищает корзину,
+    отправляет email-уведомления покупателю и администратору.
+    Требуется авторизация.
+    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderConfirmSerializer
 
@@ -118,13 +159,27 @@ class ConfirmOrderView(generics.GenericAPIView):
     
 
 class OrderListView(generics.ListAPIView):
+    """
+    Список заказов текущего пользователя.
+
+    GET-запрос возвращает все заказы с позициями и общей суммой.
+    Требуется авторизация.
+    """
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).prefetch_related('items__product_info__product', 'items__product_info__shop')
 
+
 class OrderDetailView(generics.RetrieveAPIView):
+    """
+    Детальная информация о конкретном заказе.
+
+    GET-запрос с указанием pk заказа в URL.
+    Возвращает заказ с его позициями.
+    Требуется авторизация.
+    """
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -133,6 +188,14 @@ class OrderDetailView(generics.RetrieveAPIView):
     
 
 class OrderStatusUpdateView(generics.UpdateAPIView):
+    """
+    Изменение статуса заказа.
+
+    PATCH-запрос с указанием pk заказа в URL и JSON: {"status": "new/processing/..."}.
+    Доступен только администраторам или поставщикам (владельцам магазина).
+    Отправляет email-уведомление покупателю.
+    Требуется авторизация.
+    """
     serializer_class = OrderStatusUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
 

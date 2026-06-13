@@ -17,6 +17,8 @@ db.sqlite3
 local_settings.py
 /media/
 /static/
+staticfiles/
+/staticfiles/
 
 # IDE
 .vscode/

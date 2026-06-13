@@ -5,3 +5,6 @@ PyYAML
 celery
 redis
 drf-spectacular
+django-baton
+django-cachalot
+django-silk

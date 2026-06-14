@@ -134,12 +134,15 @@ class ConfirmOrderView(generics.GenericAPIView):
 
         order = Order.objects.create(user=request.user, status='new', contact=contact)
 
-        for cart_item in cart.items.all():
-            OrderItem.objects.create(
+        order_items = [
+            OrderItem(
                 order=order,
                 product_info=cart_item.product_info,
                 quantity=cart_item.quantity
             )
+            for cart_item in cart.items.all()
+        ]
+        OrderItem.objects.bulk_create(order_items)
 
         cart.items.all().delete()
 

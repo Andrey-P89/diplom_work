@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular',
     'silk',
+    'easy_thumbnails',
 
     'products',
     'orders',
@@ -130,8 +131,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -151,18 +154,35 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-if 'test' not in sys.argv:
-    REST_FRAMEWORK.update({
-        'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
+if 'test' in sys.argv:
+    # Настройки для тестов
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.TokenAuthentication'],
+        'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+        'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+        'DEFAULT_THROTTLE_CLASSES': [],
+        'DEFAULT_THROTTLE_RATES': {},
+    }
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+else:
+    # Настройки для обычного режима (разработка / продакшен)
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.TokenAuthentication'],
+        'DEFAULT_RENDERER_CLASSES': [
+            'rest_framework.renderers.JSONRenderer',
+            'rest_framework.renderers.BrowsableAPIRenderer',
         ],
-
+        'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+        'DEFAULT_THROTTLE_CLASSES': [
+            'rest_framework.throttling.AnonRateThrottle',
+            'rest_framework.throttling.UserRateThrottle',
+        ],
         'DEFAULT_THROTTLE_RATES': {
             'anon': '10/minute',
             'user': '60/minute',
         },
-    })
+    }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'webmaster@localhost'
@@ -197,5 +217,5 @@ CACHES = {
     }
 }
 
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
+#CELERY_TASK_ALWAYS_EAGER = True
+#CELERY_TASK_EAGER_PROPAGATES = True

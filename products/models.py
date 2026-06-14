@@ -1,5 +1,6 @@
 from django.db import models
-    
+from easy_thumbnails.fields import ThumbnailerImageField
+
 
 class Shop(models.Model):
     name = models.CharField(max_length=50)
@@ -29,6 +30,18 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     description = models.TextField(blank=True, verbose_name='Описание')
+    image = ThumbnailerImageField(upload_to='products/', blank=True, null=True, verbose_name='Изображение')
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image:
+            from main.tasks import generate_thumbnails
+            generate_thumbnails.delay(
+                app_label='products',
+                model_name='Product',
+                pk=self.pk,
+                field_name='image'
+            )
 
     def __str__(self):
         return self.name

@@ -17,6 +17,8 @@ Including another URLconf
 from baton.autodiscover import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,3 +33,6 @@ urlpatterns = [
     path('api/', include('users.urls')),
     path('api/', include('orders.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

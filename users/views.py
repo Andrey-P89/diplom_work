@@ -39,6 +39,7 @@ class RegisterView(generics.CreateAPIView):
                 'email': user.email,
                 'username': user.username,
                 'type': user.type,
+                'avatar_url': user.avatar.url if user.avatar else None,
             },
             'token': token.key
         })
@@ -66,5 +67,6 @@ class LoginView(generics.GenericAPIView):
             'token': token.key,
             'user_id': user.id,
             'email': user.email,
-            'type': user.type
+            'type': user.type,
+            'avatar_url': user.avatar.url if user.avatar else None
         })

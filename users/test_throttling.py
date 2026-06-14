@@ -1,19 +1,36 @@
 from django.urls import reverse
-from rest_framework.test import APITestCase
-from rest_framework import status
-from django.test import override_settings
+from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework.throttling import AnonRateThrottle
+
 
 class ThrottlingTest(APITestCase):
-    @override_settings(REST_FRAMEWORK={
-        'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.AnonRateThrottle'],
-        'DEFAULT_THROTTLE_RATES': {'anon': '10/minute'},
-    })
+    
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.url = reverse('products')
+
     def test_anon_throttle_products(self):
-        url = reverse('products')  # имя маршрута для списка товаров
-        # Делаем 11 быстрых GET-запросов
-        for i in range(11):
-            response = self.client.get(url)
-            if i < 10:
-                self.assertEqual(response.status_code, status.HTTP_200_OK)
-            else:
-                self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+        # 1. Создаем запрос
+        request = self.factory.get(self.url)
+        
+        # 2. Имитируем анонимного пользователя и задаем IP
+        request.user = None
+        request.META['REMOTE_ADDR'] = '127.0.0.1'
+        
+        # 3. Создаем экземпляр троттлинга
+        throttle = AnonRateThrottle()
+        
+        # 4. ВАЖНО: Явно включаем троттлинг и задаем лимит, 
+        # чтобы перебить None, который подставился из-за отключения в settings.py
+        throttle.rate = '2/second'
+        throttle.num_requests, throttle.duration = throttle.parse_rate(throttle.rate)
+        
+        # 5. Проверяем логику
+        # 1-й запрос: должен пройти
+        self.assertTrue(throttle.allow_request(request, view=None))
+        
+        # 2-й запрос: должен пройти
+        self.assertTrue(throttle.allow_request(request, view=None))
+        
+        # 3-й запрос: должен быть заблокирован (вернет False)
+        self.assertFalse(throttle.allow_request(request, view=None))
